@@ -1,120 +1,71 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
+import { useMutation, useQuery } from 'convex/react'
+import { api } from '../convex/_generated/api'
 import './App.css'
 
 function App() {
-  const [count, setCount] = useState(0)
+  const apiAny = api as any
+  const score = useQuery(apiAny.happiness.getScore)
+  const vote = useMutation(apiAny.happiness.vote)
+  const isLoading = score === undefined
+  const displayScore = score ?? 0
+  const moodLabel =
+    displayScore >= 8
+      ? 'Radiant'
+      : displayScore >= 4
+        ? 'Happy'
+        : displayScore >= 1
+          ? 'Brightening'
+          : displayScore === 0
+            ? 'Neutral'
+            : displayScore >= -3
+              ? 'Wobbly'
+              : 'Stormy'
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <main className="page">
+      <header className="hero">
+        <p className="eyebrow">Community Pulse</p>
+        <h1>How are we feeling today?</h1>
+        <p className="subtitle">
+          Tap a mood to nudge the shared happiness score up or down.
+        </p>
+      </header>
+
+      <section className="scorecard">
+        <div className="score">
+          <span className="label">Overall happiness rating</span>
+          <div className="value">{isLoading ? 'Loading…' : displayScore}</div>
+          <span className="mood">{moodLabel}</span>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.tsx</code> and save to test <code>HMR</code>
-          </p>
+        <div className="meter" aria-hidden="true">
+          <span
+            style={{
+              transform: `translateX(${Math.min(
+                46,
+                Math.max(-46, displayScore * 6),
+              )}px)`,
+            }}
+          />
         </div>
+      </section>
+
+      <section className="actions">
         <button
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
+          className="mood-button happy"
+          onClick={() => vote({ delta: 1 })}
+          aria-label="Vote happy"
         >
-          Count is {count}
+          Happy
+        </button>
+        <button
+          className="mood-button sad"
+          onClick={() => vote({ delta: -1 })}
+          aria-label="Vote sad"
+        >
+          Sad
         </button>
       </section>
-
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+    </main>
   )
 }
 
